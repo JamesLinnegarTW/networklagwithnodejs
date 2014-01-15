@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>PacketLossTest</title>
+		  	<meta name="viewport" content = "width = device-width, initial-scale = 1, user-scalable = no" />
+		  	<meta name="apple-mobile-web-app-capable" content="yes" />
+		  
+	</head>
+	<body>
+	<div id="debug"></div>
+	<script src='js/socket.io.js'></script> 
+	<script src='js/underscore.js'></script> 
+	<script src='js/animationFrameShim.js'></script> 
+	<script src='http://builds.handlebarsjs.com.s3.amazonaws.com/handlebars-v1.3.0.js'></script>
+	
+<script id="entry-template" type="text/x-handlebars-template">
+
+  {{#each buffer}}
+  	<div>
+  	{{#if rendered}}
+  		<b style="color:blue;">
+  	{{/if}}
+  	{{tick}} - {{time}}
+  	{{#if rendered}}
+  		</b>
+  	{{/if}}
+  	</div>
+  {{/each}}
+
+</script>
+
+	<script type="text/javascript">
+
+	
+	(function(){
+		var worldBuffer = [];
+	    var worldBufferIndex = -1;
+	    var clientTick = 0;
+	    var serverTick;
+
+	    var clientTime = new Date().getTime();
+	    var el = document.getElementById('debug');
+	   
+
+	    var source   = document.getElementById("entry-template").innerHTML;
+		var template = Handlebars.compile(source);
+
+		var socket = io.connect(
+			'http://'+window.location.hostname+':9000/'
+		);
+
+		socket.on('connect', function () {});
+
+
+		socket.on('w', function(data){
+			worldBufferIndex++;
+			if(worldBufferIndex > 30){
+				worldBufferIndex = 0;
+			}
+
+			worldBuffer[worldBufferIndex] = data;
+
+			if(!clientTick) clientTick = data.tick - 20;
+
+			serverTick = data.tick;
+
+		});
+
+
+		setInterval(function(){
+
+			toRender = _.find(worldBuffer, function(world){ return world.tick == clientTick; });
+
+			if(toRender) toRender.rendered = true;
+			el.innerHTML = template({'buffer' : worldBuffer});
+			
+			if(clientTick < serverTick) {
+				clientTick++;
+			}
+
+		},10);
+		
+	})();
+
+	</script>
+	</body>
+</html>
