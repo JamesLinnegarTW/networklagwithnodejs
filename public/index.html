@@ -54,7 +54,7 @@
 
 		socket.on('w', function(data){
 			worldBufferIndex++;
-			if(worldBufferIndex > 30){
+			if(worldBufferIndex > 100){
 				worldBufferIndex = 0;
 			}
 
@@ -79,7 +79,7 @@
 			}
 
 		},10);
-		
+
 	})();
 
 	</script>
