@@ -54,13 +54,13 @@
 
 		socket.on('w', function(data){
 			worldBufferIndex++;
-			if(worldBufferIndex > 100){
+			if(worldBufferIndex > 1000){
 				worldBufferIndex = 0;
 			}
 
 			worldBuffer[worldBufferIndex] = data;
 
-			if(!clientTick) clientTick = data.tick - 20;
+			if(!clientTick) clientTick = data.tick - 200;
 
 			serverTick = data.tick;
 
