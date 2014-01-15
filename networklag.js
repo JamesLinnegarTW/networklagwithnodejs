@@ -62,4 +62,4 @@ setInterval(function(){
         clients[i].volatile.emit('w', data);
     }
 
-},10);
+},100);
