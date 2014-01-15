@@ -14,7 +14,11 @@
 	<script src='http://builds.handlebarsjs.com.s3.amazonaws.com/handlebars-v1.3.0.js'></script>
 	
 <script id="entry-template" type="text/x-handlebars-template">
-
+   <table>
+   		<tr><th>clientTick</th><td>{{clientTick}}</td></tr>
+   		<tr><th>Server</th><td>{{serverTick}}</td></tr>
+   </table>
+   <br />
   {{#each buffer}}
   	<div>
   	{{#if rendered}}
@@ -72,7 +76,7 @@
 			toRender = _.find(worldBuffer, function(world){ return world.tick == clientTick; });
 
 			if(toRender) toRender.rendered = true;
-			el.innerHTML = template({'buffer' : worldBuffer});
+			el.innerHTML = template({'buffer' : worldBuffer, 'clientTick':clientTick, 'serverTick':serverTick});
 			
 			if(clientTick < serverTick) {
 				clientTick++;
