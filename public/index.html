@@ -17,7 +17,7 @@
    <table>
    		<tr><th>clientTick</th><td>{{clientTick}}</td></tr>
    		<tr><th>Server</th><td>{{serverTick}}</td></tr>
-   		<tr><th>Behind</th><td>{{serverTick - clientTick}}</td></tr>
+   		<tr><th>Behind</th><td>{{difference}}</td></tr>
    </table>
    <br />
   {{#each buffer}}
@@ -77,7 +77,7 @@
 			toRender = _.find(worldBuffer, function(world){ return world.tick == clientTick; });
 
 			if(toRender) toRender.rendered = true;
-			el.innerHTML = template({'buffer' : worldBuffer, 'clientTick':clientTick, 'serverTick':serverTick});
+			el.innerHTML = template({'buffer' : worldBuffer, 'clientTick':clientTick, 'serverTick':serverTick, 'difference':serverTick - clientTick});
 			
 			if(clientTick < serverTick) {
 				clientTick++;
