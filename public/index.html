@@ -121,11 +121,11 @@
 			
 			if(toRender) {
 				toRender.rendered = true;
-				bEl.style.left = ((toRender.b.x / 100) * W) + "px";
+				bEl.style.left = ((toRender.b.x / 100) * 1000) + "px";
 				
 			}
 
-			el.innerHTML = template({'buffer' : worldBuffer, 'debug': JSON.stringify(debug)});
+			el.innerText = JSON.stringify(debug); //template({'buffer' : worldBuffer, 'debug': JSON.stringify(debug)});
 			
 			requestAnimationFrame(start);
 		}
