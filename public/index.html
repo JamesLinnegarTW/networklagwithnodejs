@@ -79,11 +79,13 @@
 				toRender = _.find(sortedBuffer, function(world){ return world.tick > tickNo; });
 				
 				if(toRender) {
+					
 					index = _.indexOf(sortedBuffer, toRender);
 					var prevFrame = sortedBuffer[index-1];
 					
 					if(prevFrame) {
-						var diff = (prevFrame.b.x - toRender.b.x) * (timeDifference / 100);
+						var tickBetweenFrames = toRender.tick - prevFrame.tick;
+						var diff = (prevFrame.b.x - toRender.b.x) * (timeDifference / (100*tickBetweenFrames));
 						bEl.style.backgroundColor = 'red';
 						bEl.style.left = ((((prevFrame.b.x - diff) / 100) * W) -10)+ "px";	
 					} 
