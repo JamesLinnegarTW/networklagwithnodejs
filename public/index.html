@@ -9,7 +9,7 @@
 		  		top:100px;
 		  		width:20px;
 		  		height:20px;
-		  		background-color:red;
+		  		background-color:white;
 		  		z-index:10;
 		  	}
 		  	</style>
@@ -63,22 +63,34 @@
 		});
 
 		function start(){
-			var toRender = null;
-			var sortedBuffer = _.sort(worldBuffer, function(state){ return state.tick; });
+			if(worldBuffer.length > 0) {
+				var toRender = null;
+				var sortedBuffer = _.sortBy(worldBuffer, function(state){ return state.tick; });
 
-			var currentTime = new Date().getTime().toString().substring(0,11);
-			var timeSincefirstTick = ((currentTime - 10) - firstTickTime); 
-			var tickNo = Math.floor((timeSincefirstTick) + firstTick);
-			
-			if(tickNo > serverTick) tickNo = serverTick;
-			toRender = _.find(sortedBuffer, function(world){ return world.tick == tickNo; });
-			
-			if(toRender) {
-				toRender.rendered = true;
-				bEl.style.left = ((toRender.b.x / 100) * 1000) + "px";				
+				var currentTime = new Date().getTime().toString().substring(0,11);
+				
+				var timeDifference = new Date().getTime().toString().substring(11)
+
+				var timeSincefirstTick = ((currentTime - 10) - firstTickTime); 
+				var tickNo = Math.floor((timeSincefirstTick) + firstTick);
+				
+				if(tickNo > serverTick) tickNo = serverTick;
+
+				toRender = _.find(sortedBuffer, function(world){ return world.tick > tickNo; });
+				
+				if(toRender) {
+					index = _.indexOf(sortedBuffer, toRender);
+					var prevFrame = sortedBuffer[index-1];
+					
+					if(prevFrame) {
+						var diff = (prevFrame.b.x - toRender.b.x) * (timeDifference / 100);
+						bEl.style.backgroundColor = 'red';
+						bEl.style.left = ((((prevFrame.b.x - diff) / 100) * W) -10)+ "px";	
+					} 
+				}
+							
+				requestAnimationFrame(start);
 			}
-						
-			requestAnimationFrame(start);
 		}
 
 	})();

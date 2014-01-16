@@ -63,12 +63,12 @@ setInterval(function(){
 
     if(b.x > 100){
         b.x = 100;
-        b.speed = -1;
+        b.speed = -2;
     }
 
     if(b.x < 0){
         b.x = 0;
-        b.speed = 1;
+        b.speed = 2;
     }
 
 
