@@ -19,6 +19,13 @@ var tick = 0;
 var clients = [];
 
 
+function Ball(){
+    this.x = 0;
+    this.speed = 1;
+}
+
+var b = new Ball();
+
 require('http').createServer(function (request, response) {
     request.addListener('end', function () {
         file.serve(request, response);
@@ -44,19 +51,30 @@ io.sockets.on('connection', function (socket) {
 
 });
 
-var lastRender = new Date().getTime();
+var serverStartRender = new Date().getTime().toString().substring(0,11);
 
 setInterval(function(){
-    var newDate = new Date().getTime();
-    var delta = newDate - lastRender;
-    lastRender = newDate;
 
-    tick++;
-    if(tick > 1000000) tick = 0;
+    var newDate = new Date().getTime().toString().substring(0,11);
+
+
+
+    b.x = b.x + b.speed;
+
+    if(b.x > 100){
+        b.x = 100;
+        b.speed = -1;
+    }
+
+    if(b.x < 0){
+        b.x = 0;
+        b.speed = 1;
+    }
+
 
     var data = {};
-    data.tick = tick;
-    data.time = lastRender;
+    data.tick = newDate - serverStartRender;
+    data.b = b;
 
     for(var i= 0; i < clients.length; i++) {
         clients[i].volatile.emit('w', data);

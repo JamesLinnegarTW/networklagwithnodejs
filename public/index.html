@@ -4,28 +4,37 @@
 		<title>PacketLossTest</title>
 		  	<meta name="viewport" content = "width = device-width, initial-scale = 1, user-scalable = no" />
 		  	<meta name="apple-mobile-web-app-capable" content="yes" />
-		  
+		  <style>
+		  	#ball {
+		  		position:fixed;
+		  		left:0;
+		  		top:100px;
+		  		width:20px;
+		  		height:20px;
+		  		background-color:red;
+		  		z-index:10;
+		  	}
+		  	</style>
 	</head>
 	<body>
+
+
 	<div id="debug"></div>
+	<div id="ball"></div>
 	<script src='js/socket.io.js'></script> 
 	<script src='js/underscore.js'></script> 
 	<script src='js/animationFrameShim.js'></script> 
 	<script src='http://builds.handlebarsjs.com.s3.amazonaws.com/handlebars-v1.3.0.js'></script>
 	
 <script id="entry-template" type="text/x-handlebars-template">
-   <table>
-   		<tr><th>clientTick</th><td>{{clientTick}}</td></tr>
-   		<tr><th>Server</th><td>{{serverTick}}</td></tr>
-   		<tr><th>Behind</th><td>{{difference}}</td></tr>
-   </table>
-   <br />
+<h4>{{debug}}</h4>
+
   {{#each buffer}}
   	<div>
   	{{#if rendered}}
   		<b style="color:blue;">
   	{{/if}}
-  	{{tick}} - {{time}}
+  	{{tick}} ({{b.x}})
   	{{#if rendered}}
   		</b>
   	{{/if}}
@@ -37,15 +46,29 @@
 	<script type="text/javascript">
 
 	
+
+		    var W = window.innerWidth;
+
+
+
+	
+	
+       window.onresize = function(){
+               W = window.innerWidth;               
+       };
+
 	(function(){
 		var worldBuffer = [];
 	    var worldBufferIndex = -1;
 	    var clientTick = 0;
 	    var serverTick;
-
+	    var serverLag = 0;
 	    var clientTime = new Date().getTime();
 	    var el = document.getElementById('debug');
 	   
+	   var bEl = document.getElementById('ball');
+	    var firstTick;
+	    var firstTickTime;
 
 	    var source   = document.getElementById("entry-template").innerHTML;
 		var template = Handlebars.compile(source);
@@ -58,32 +81,54 @@
 
 
 		socket.on('w', function(data){
+			serverTick = data.tick;
 			worldBufferIndex++;
-			if(worldBufferIndex > 100){
+
+			if(worldBufferIndex > 30){
 				worldBufferIndex = 0;
 			}
 
 			worldBuffer[worldBufferIndex] = data;
-
-			if(!clientTick) clientTick = data.tick - 20;
-
-			serverTick = data.tick;
-
+			
+			if(!firstTick) {
+				firstTick = data.tick;
+				firstTickTime = new Date().getTime().toString().substring(0,11);
+				requestAnimationFrame(start);
+			}
+			
 		});
 
+		function start(){
+			var toRender = null;
+			var debug = {};
 
-		setInterval(function(){
+			var currentTime = new Date().getTime().toString().substring(0,11);
+			debug.currentTime = currentTime;
 
-			toRender = _.find(worldBuffer, function(world){ return world.tick == clientTick; });
+			var timeSincefirstTick = ((currentTime - 10) - firstTickTime); 
+			debug.timeSincefirstTick = timeSincefirstTick;
+			debug.firstTick = firstTick;
+			debug.firstTickTime = firstTickTime;
 
-			if(toRender) toRender.rendered = true;
-			el.innerHTML = template({'buffer' : worldBuffer, 'clientTick':clientTick, 'serverTick':serverTick, 'difference':serverTick - clientTick});
+			var tickNo = Math.floor((timeSincefirstTick) + firstTick);
 			
-			if(clientTick < serverTick) {
-				clientTick++;
+			if(tickNo > serverTick) tickNo = serverTick;
+
+			debug.tickNo = tickNo;
+			debug.serverTick = serverTick;
+			debug.tickBehind = serverTick - tickNo;
+			toRender = _.find(worldBuffer, function(world){ return world.tick == tickNo; });
+			
+			if(toRender) {
+				toRender.rendered = true;
+				bEl.style.left = ((toRender.b.x / 100) * W) + "px";
+				
 			}
 
-		},100);
+			el.innerHTML = template({'buffer' : worldBuffer, 'debug': JSON.stringify(debug)});
+			
+			requestAnimationFrame(start);
+		}
 
 	})();
 
