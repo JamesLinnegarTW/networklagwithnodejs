@@ -22,34 +22,10 @@
 	<script src='js/socket.io.js'></script> 
 	<script src='js/underscore.js'></script> 
 	<script src='js/animationFrameShim.js'></script> 
-	<script src='http://builds.handlebarsjs.com.s3.amazonaws.com/handlebars-v1.3.0.js'></script>
 	
-<script id="entry-template" type="text/x-handlebars-template">
-<h4>{{debug}}</h4>
-
-  {{#each buffer}}
-  	<div>
-  	{{#if rendered}}
-  		<b style="color:blue;">
-  	{{/if}}
-  	{{tick}} ({{b.x}})
-  	{{#if rendered}}
-  		</b>
-  	{{/if}}
-  	</div>
-  {{/each}}
-
-</script>
-
 	<script type="text/javascript">
 
-	
-
-		    var W = window.innerWidth;
-
-
-
-	
+		var W = window.innerWidth;
 	
        window.onresize = function(){
                W = window.innerWidth;               
@@ -58,25 +34,15 @@
 	(function(){
 		var worldBuffer = [];
 	    var worldBufferIndex = -1;
-	    var clientTick = 0;
 	    var serverTick;
-	    var serverLag = 0;
-	    var clientTime = new Date().getTime();
-	    var el = document.getElementById('debug');
-	   
-	   var bEl = document.getElementById('ball');
+	    var el = document.getElementById('debug');	   
+	    var bEl = document.getElementById('ball');
 	    var firstTick;
 	    var firstTickTime;
-
-	    var source   = document.getElementById("entry-template").innerHTML;
-		var template = Handlebars.compile(source);
 
 		var socket = io.connect(
 			'http://'+window.location.hostname+':9000/'
 		);
-
-		socket.on('connect', function () {});
-
 
 		socket.on('w', function(data){
 			serverTick = data.tick;
@@ -98,33 +64,20 @@
 
 		function start(){
 			var toRender = null;
-			var debug = {};
+			var sortedBuffer = _.sort(worldBuffer, function(state){ return state.tick; });
 
 			var currentTime = new Date().getTime().toString().substring(0,11);
-			debug.currentTime = currentTime;
-
 			var timeSincefirstTick = ((currentTime - 10) - firstTickTime); 
-			debug.timeSincefirstTick = timeSincefirstTick;
-			debug.firstTick = firstTick;
-			debug.firstTickTime = firstTickTime;
-
 			var tickNo = Math.floor((timeSincefirstTick) + firstTick);
 			
 			if(tickNo > serverTick) tickNo = serverTick;
-
-			debug.tickNo = tickNo;
-			debug.serverTick = serverTick;
-			debug.tickBehind = serverTick - tickNo;
-			toRender = _.find(worldBuffer, function(world){ return world.tick == tickNo; });
+			toRender = _.find(sortedBuffer, function(world){ return world.tick == tickNo; });
 			
 			if(toRender) {
 				toRender.rendered = true;
-				bEl.style.left = ((toRender.b.x / 100) * 1000) + "px";
-				
+				bEl.style.left = ((toRender.b.x / 100) * 1000) + "px";				
 			}
-
-			el.innerText = debug.tickBehind;
-			
+						
 			requestAnimationFrame(start);
 		}
 
