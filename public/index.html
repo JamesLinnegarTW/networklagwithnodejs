@@ -3,15 +3,26 @@
 	<head>
 		<title>PacketLossTest</title>
 		  <style>
-		  	#ball {
-		  		position:fixed;
-		  		left:0;
-		  		top:100px;
-		  		width:20px;
-		  		height:20px;
-		  		background-color:white;
-		  		z-index:10;
-		  	}
+		  		#debug {
+		  			width:20%;
+		  			z-index:10;
+		  			color:white;
+		  			position:fixed;
+		  			left:0;
+		  			top:0;
+		  			bottom:0;
+		  			background-color:black;
+
+		  		}
+		  		#ball {
+		  			position:fixed;
+		  			left:0;
+		  			top:50%;
+		  			width:20px;
+		  			height:20px;
+		  			z-index:20;
+		  			background-color:red;
+		  		}
 		  	</style>
 	</head>
 	<body>
@@ -22,6 +33,21 @@
 	<script src='js/socket.io.js'></script> 
 	<script src='js/underscore.js'></script> 
 	<script src='js/animationFrameShim.js'></script> 
+	<script src='http://builds.handlebarsjs.com.s3.amazonaws.com/handlebars-v1.3.0.js'></script>
+	
+<script id="entry-template" type="text/x-handlebars-template">
+  <h4>{{debug}}</h1>
+  {{#each buffer}}
+  	<div>
+  	
+  	{{tick}}
+  	{{#if color}}
+  		<b style="color:{{color}};">*</b>
+  	{{/if}}
+  	</div>
+  {{/each}}
+
+</script>
 	
 	<script type="text/javascript">
 
@@ -40,6 +66,9 @@
 	    var firstTick;
 	    var firstTickTime;
 
+	    var source   = document.getElementById("entry-template").innerHTML;
+		var template = Handlebars.compile(source);
+
 		var socket = io.connect(
 			'http://'+window.location.hostname+':9000/'
 		);
@@ -51,7 +80,7 @@
 			if(worldBufferIndex > 30){
 				worldBufferIndex = 0;
 			}
-
+			data.color = "black";
 			worldBuffer[worldBufferIndex] = data;
 			
 			if(!firstTick) {
@@ -61,10 +90,15 @@
 			}
 			
 		});
+		
+		function draw(position){
+			bEl.style.left = ((position * W) -10)+ "px";
+		}
 
 		function start(){
 			if(worldBuffer.length > 0) {
-				var toRender = null;
+				var debug = {};
+				var nextFrame = null;
 				var sortedBuffer = _.sortBy(worldBuffer, function(state){ return state.tick; });
 
 				var currentTime = new Date().getTime().toString().substring(0,11);
@@ -76,21 +110,31 @@
 				
 				if(tickNo > serverTick) tickNo = serverTick;
 
-				toRender = _.find(sortedBuffer, function(world){ return world.tick > tickNo; });
+				nextFrame = _.find(sortedBuffer, function(world){ return world.tick > tickNo; });
 				
-				if(toRender) {
+				if(nextFrame) {
 					
-					index = _.indexOf(sortedBuffer, toRender);
-					var prevFrame = sortedBuffer[index-1];
+					index = _.indexOf(sortedBuffer, nextFrame);
+					var previousFrame = sortedBuffer[index-1];
 					
-					if(prevFrame) {
-						var tickBetweenFrames = toRender.tick - prevFrame.tick;
-						var diff = (prevFrame.b.x - toRender.b.x) * (timeDifference / (100*tickBetweenFrames));
-						bEl.style.backgroundColor = 'red';
-						bEl.style.left = ((((prevFrame.b.x - diff) / 100) * W) -10)+ "px";	
+					if(previousFrame) {
+						var previousPosition = previousFrame.b.x / 100;
+						var nextPosition = nextFrame.b.x / 100;
+
+						var difference = nextPosition - previousPosition;
+						previousPosition = previousPosition + (timeDifference * (difference / 100));
+
+						debug.t = Math.abs(nextPosition - previousPosition);
+
+						
+						draw(previousPosition);
+					
+						previousFrame.color = "blue";
+						nextFrame.color = "red";
+
 					} 
 				}
-							
+				el.innerHTML = template({'buffer' : sortedBuffer, debug: JSON.stringify(debug)});			
 				requestAnimationFrame(start);
 			}
 		}
