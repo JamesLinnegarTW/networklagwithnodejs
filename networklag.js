@@ -20,8 +20,8 @@ var clients = [];
 
 
 function Ball(){
-    this.x = 0;
-    this.speed = 1;
+    this.x = 50;
+    this.y = 50;
 }
 
 var b = new Ball();
@@ -49,6 +49,11 @@ io.sockets.on('connection', function (socket) {
 
     });
 
+    socket.on('p', function(data){
+        b.x = data.x;
+        b.y = data.y;
+    })
+
 });
 
 var serverStartRender = new Date().getTime().toString().substring(0,11);
@@ -56,20 +61,6 @@ var serverStartRender = new Date().getTime().toString().substring(0,11);
 setInterval(function(){
 
     var newDate = new Date().getTime().toString().substring(0,11);
-
-
-
-    b.x = b.x + b.speed;
-
-    if(b.x > 100){
-        b.x = 100;
-        b.speed = -2;
-    }
-
-    if(b.x < 0){
-        b.x = 0;
-        b.speed = 2;
-    }
 
 
     var data = {};

@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>MMOPong</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/spectrum.css">
+  <!-- Phone specific stuff -->
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=0" />
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta names="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+ 
+  <!--[if lt IE 9]>
+  <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <script type="text/javascript" src="js/jquery.min.js"></script>
+  <script src='js/socket.io.js'></script>  
+
+  <style type="text/css">
+    body {
+      margin:0;
+      border:0;
+    }
+    input, button {
+      box-sizing:border-box;
+      padding:10px;
+      width:90%;
+      margin:10px 5%;
+      font-size:20px;
+      font-family: 'Share Tech', sans-serif;
+    }
+    canvas {
+        width:100%;
+        height: 100%;
+        display:none;    
+    }
+    html {
+      -webkit-transition: all 2s ease;
+    }
+  </style>
+
+
+</head>
+<body>
+
+</body>
+
+<script type="text/javascript">
+  
+
+
+
+    var socket = io.connect(
+      'http://'+window.location.hostname+':9000/'
+    );
+
+    $('#form').hide();
+    $('canvas').show();
+
+    function moveUser(e) {  
+
+        e.preventDefault(); 
+
+        var data = {};
+
+        var y = e.touches[0].clientY ;
+        var x = e.touches[0].clientX ;
+        data.x = (x/ window.innerWidth) * 100;
+        data.y = (y/ window.innerHeight) * 100;
+
+        socket.emit('p', data);          
+
+    }
+
+
+    socket.on('connect', function () {
+         
+
+        document.addEventListener('touchstart', function (e) {   
+            e.preventDefault(); 
+        }, false);
+
+        document.addEventListener('touchmove', moveUser, false);
+
+
+    });
+
+
+
+
+</script>
+</html>

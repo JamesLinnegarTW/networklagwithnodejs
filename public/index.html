@@ -105,7 +105,7 @@
 				
 				var timeDifference = new Date().getTime().toString().substring(11)
 
-				var timeSincefirstTick = ((currentTime - 10) - firstTickTime); 
+				var timeSincefirstTick = ((currentTime - 4) - firstTickTime); 
 				var tickNo = Math.floor((timeSincefirstTick) + firstTick);
 				
 				if(tickNo > serverTick) tickNo = serverTick;
